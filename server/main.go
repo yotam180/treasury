@@ -1,7 +1,12 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/yotam180/treasury/altfs"
+)
 
 func main() {
-	fmt.Println("Hello, world")
+	fs := altfs.NewFS([]string{"test/"}, []string{})
+	fmt.Println(fs.Exists("/b.txt"))
 }
