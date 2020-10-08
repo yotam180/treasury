@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	fs := altfs.NewFS([]string{"__test/"}, []string{})
+	fs := altfs.NewFS([]string{"__test/", "__test copy/"}, []string{})
 
 	r := repo.New(fs, "My Product")
 	versions, err := r.ListReleases()

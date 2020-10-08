@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"sort"
 	"strings"
 )
 
@@ -120,9 +121,16 @@ func (fs AltFS) ListDir(dirPath string) ([]os.FileInfo, error) {
 		return nil, fmt.Errorf("could not find directory %s", dirPath)
 	}
 
-	arrayResults := make([]os.FileInfo, 0, len(results))
+	names := make([]string, 0, len(results))
 	for _, result := range results {
-		arrayResults = append(arrayResults, result)
+		names = append(names, result.Name())
+	}
+
+	sort.Strings(names)
+
+	arrayResults := make([]os.FileInfo, len(results))
+	for index, name := range names {
+		arrayResults[index] = results[name]
 	}
 
 	return arrayResults, nil
