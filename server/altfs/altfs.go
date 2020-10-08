@@ -2,6 +2,7 @@ package altfs
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -35,7 +36,6 @@ func NewFS(reads []string, writes []string) AltFS {
 
 // Open tries to open a file similarly to os.Open
 func (fs AltFS) Open(name string) (ReadFile, error) {
-
 	if fs.reads == nil {
 		return nil, fmt.Errorf("write-only file system")
 	}
@@ -52,13 +52,12 @@ func (fs AltFS) Open(name string) (ReadFile, error) {
 
 // Create tries to create a file similarly to os.Create
 func (fs AltFS) Create(name string) (WriteFile, error) {
-
 	if fs.writes == nil {
 		return nil, fmt.Errorf("read-only file system")
 	}
 
 	for _, mount := range fs.writes {
-		file, err := os.Create(path.Join(mount, removeLeadingSlash(name)))
+		file, err := os.Create(fs.mkpath(mount, name))
 		if err == nil {
 			return file, nil
 		}
@@ -70,12 +69,67 @@ func (fs AltFS) Create(name string) (WriteFile, error) {
 // Exists checks if a file exists in one of the READ mount points.
 func (fs AltFS) Exists(name string) bool {
 	for _, mount := range fs.reads {
-		if _, err := os.Stat(path.Join(mount, removeLeadingSlash(name))); err == nil {
+		if _, err := os.Stat(fs.mkpath(mount, name)); err == nil {
 			return true
 		}
 	}
 
 	return false
+}
+
+/*
+Mkdir creates a directory
+*/
+func (fs AltFS) Mkdir(dirPath string) error {
+	if fs.writes == nil {
+		return fmt.Errorf("read-only file system")
+	}
+
+	for _, mount := range fs.writes {
+		if err := os.MkdirAll(fs.mkpath(mount, dirPath), os.ModePerm); err == nil {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("can't create directory on any of the mount points")
+}
+
+/*
+ListDir returns all files and subdirectories in a directory in the file system, across all read mount-points
+*/
+func (fs AltFS) ListDir(dirPath string) ([]os.FileInfo, error) {
+	results := make(map[string]os.FileInfo, 0)
+
+	someSuccess := false
+
+	for _, mount := range fs.reads {
+		list, err := ioutil.ReadDir(fs.mkpath(mount, dirPath))
+		if err != nil {
+			continue // TODO: Is this a good decision?
+		}
+
+		someSuccess = true
+		for _, result := range list {
+			if _, contains := results[result.Name()]; !contains {
+				results[result.Name()] = result
+			}
+		}
+	}
+
+	if !someSuccess {
+		return nil, fmt.Errorf("could not find directory %s", dirPath)
+	}
+
+	arrayResults := make([]os.FileInfo, 0, len(results))
+	for _, result := range results {
+		arrayResults = append(arrayResults, result)
+	}
+
+	return arrayResults, nil
+}
+
+func (fs AltFS) mkpath(mount, filePath string) string {
+	return path.Join(mount, removeLeadingSlash(filePath))
 }
 
 func removeLeadingSlash(filePath string) string {
