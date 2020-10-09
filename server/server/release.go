@@ -50,6 +50,6 @@ func listFiles(c *gin.Context) {
 }
 
 func init() {
-	// Main.GET("/api/repos/:repo/releases", listReleases)
+	Main.GET("/api/repos/:repo/releases", listReleases)
 	Main.GET("/api/repos/:repo/releases/:release", listFiles)
 }
