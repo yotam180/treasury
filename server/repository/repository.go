@@ -25,8 +25,8 @@ Repo is a collection of releases for a project
 type Repo struct {
 	bucket *Bucket
 
-	Name        string
-	LastUpdated time.Time
+	Name        string    `json:"name"`
+	LastUpdated time.Time `json:"last_updated"`
 }
 
 /*
@@ -36,7 +36,8 @@ type Release struct {
 	repo   *Repo
 	bucket *Bucket
 
-	Version string
+	Version     string    `json:"version"`
+	LastUpdated time.Time `json:"last_updated"`
 }
 
 /*
@@ -102,7 +103,7 @@ func (repo *Repo) ListReleases() ([]Release, error) {
 
 	for _, dir := range subDirs {
 		if dir.IsDir() {
-			releases = append(releases, Release{repo, repo.bucket, dir.Name()})
+			releases = append(releases, Release{repo, repo.bucket, dir.Name(), dir.ModTime()})
 		}
 	}
 
@@ -119,7 +120,7 @@ func (repo *Repo) CreateRelease(version string) (Release, error) {
 		return Release{}, err
 	}
 
-	return Release{repo, repo.bucket, version}, nil
+	return Release{repo, repo.bucket, version, time.Now()}, nil // TODO: If the folder already existed, return the correct datetime and not time.Now()
 }
 
 /*
