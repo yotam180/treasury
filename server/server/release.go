@@ -19,7 +19,8 @@ func listReleases(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"data": releases,
+		"repository": repo,
+		"releases":   releases,
 	})
 }
 
@@ -50,6 +51,6 @@ func listFiles(c *gin.Context) {
 }
 
 func init() {
-	Main.GET("/api/repos/:repo/releases", listReleases)
+	Main.GET("/api/repos/:repo", listReleases)
 	Main.GET("/api/repos/:repo/releases/:release", listFiles)
 }
