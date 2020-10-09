@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/yotam180/treasury/repository"
@@ -38,10 +39,15 @@ func main() {
 	}
 	defer f.Close()
 
-	err = release.AddFile("main_exe.go", f)
+	// err = release.AddFile("main_exe.go", f)
+
+	file, err := release.GetFile("main_exe.go")
 	if err != nil {
 		fmt.Println(err)
 	}
+	defer file.Close()
+
+	io.Copy(os.Stdout, file)
 
 	fmt.Println(release.Version)
 }

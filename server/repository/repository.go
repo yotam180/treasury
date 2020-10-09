@@ -150,6 +150,20 @@ func (release Release) AddFile(fileName string, blob io.Reader) error {
 }
 
 /*
+GetFile opens a specific file in a release for reading
+*/
+func (release Release) GetFile(fileName string) (altfs.ReadFile, error) {
+	filePath := path.Join(release.Path(), "files", fileName)
+
+	file, err := release.Repo.Open(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("can't open release file: %w", err)
+	}
+
+	return file, nil
+}
+
+/*
 Path eturns the root path of the release inside the file system
 */
 func (release Release) Path() string {
