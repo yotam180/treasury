@@ -1,22 +1,15 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/yotam180/treasury/repo"
-
 	"github.com/yotam180/treasury/altfs"
+	"github.com/yotam180/treasury/repository"
+	"github.com/yotam180/treasury/server"
 )
 
 func main() {
-	fs := altfs.NewFS([]string{"__test/", "__test copy/"}, []string{})
+	fs := altfs.NewFS([]string{"__test/"}, []string{"__test/"})
+	bucket := repository.NewBucket(fs)
 
-	r := repo.New(fs, "My Product")
-	versions, err := r.ListReleases()
-	if err != nil {
-		fmt.Println("Error: %w", err)
-		return
-	}
-
-	fmt.Println(versions)
+	server.Bucket = bucket
+	server.Main.Run()
 }

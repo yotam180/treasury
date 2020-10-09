@@ -37,7 +37,7 @@ func NewFS(reads []string, writes []string) AltFS {
 
 // Open tries to open a file similarly to os.Open
 func (fs AltFS) Open(name string) (ReadFile, error) {
-	if fs.reads == nil {
+	if len(fs.reads) == 0 {
 		return nil, fmt.Errorf("write-only file system")
 	}
 
@@ -53,7 +53,7 @@ func (fs AltFS) Open(name string) (ReadFile, error) {
 
 // Create tries to create a file similarly to os.Create
 func (fs AltFS) Create(name string) (WriteFile, error) {
-	if fs.writes == nil {
+	if len(fs.writes) == 0 {
 		return nil, fmt.Errorf("read-only file system")
 	}
 
@@ -65,6 +65,21 @@ func (fs AltFS) Create(name string) (WriteFile, error) {
 	}
 
 	return nil, fmt.Errorf("can't open file %s on any of the write-enable mount points", name)
+}
+
+// Stat stats a file in the file system
+func (fs AltFS) Stat(name string) (os.FileInfo, error) {
+	var lastError error = nil
+
+	for _, mount := range fs.reads {
+		info, err := os.Stat(fs.mkpath(mount, name))
+		if err == nil {
+			return info, nil
+		}
+		lastError = err
+	}
+
+	return nil, lastError
 }
 
 // Exists checks if a file exists in one of the READ mount points.
@@ -82,14 +97,17 @@ func (fs AltFS) Exists(name string) bool {
 Mkdir creates a directory
 */
 func (fs AltFS) Mkdir(dirPath string) error {
-	if fs.writes == nil {
+
+	if len(fs.writes) == 0 {
 		return fmt.Errorf("read-only file system")
 	}
 
 	for _, mount := range fs.writes {
-		if err := os.MkdirAll(fs.mkpath(mount, dirPath), os.ModePerm); err == nil {
+		err := os.MkdirAll(fs.mkpath(mount, dirPath), os.ModePerm)
+		if err == nil {
 			return nil
 		}
+		fmt.Println(err)
 	}
 
 	return fmt.Errorf("can't create directory on any of the mount points")
