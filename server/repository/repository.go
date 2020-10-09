@@ -3,6 +3,7 @@ package repository
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"path"
 
@@ -112,6 +113,37 @@ func (release Release) SetMetadata(newKeys map[string]interface{}) error {
 	_, err = f.Write(marshalled)
 	if err != nil {
 		return fmt.Errorf("can't write metadata to file: %w", err)
+	}
+
+	return nil
+}
+
+/*
+AddFile adds a file to the release.
+If the file exists, this fails with an error
+*/
+func (release Release) AddFile(fileName string, blob io.Reader) error {
+	fileDirPath := path.Join(release.Path(), "files")
+	filePath := path.Join(fileDirPath, fileName)
+
+	if release.Repo.Exists(filePath) {
+		return fmt.Errorf("file %s already exists in release %s", fileName, release.Version)
+	}
+
+	err := release.Repo.Mkdir(fileDirPath)
+	if err != nil {
+		return fmt.Errorf("cannot create release file directory: %w", err)
+	}
+
+	f, err := release.Repo.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("cannot create file in release: %w", err)
+	}
+	defer f.Close()
+
+	_, err = io.Copy(f, blob)
+	if err != nil {
+		return fmt.Errorf("cannot copy file into release: %w", err)
 	}
 
 	return nil

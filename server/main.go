@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/yotam180/treasury/repository"
 
@@ -29,6 +30,18 @@ func main() {
 		"author": "Yotam S",
 	})
 	fmt.Println(release.GetMetadata())
+
+	f, err := os.Open("main.go")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer f.Close()
+
+	err = release.AddFile("main_exe.go", f)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	fmt.Println(release.Version)
 }
