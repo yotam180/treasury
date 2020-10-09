@@ -11,13 +11,8 @@ func listRepositories(c *gin.Context) {
 		return
 	}
 
-	results := make([]string, len(repos))
-	for i, repo := range repos {
-		results[i] = repo.Name
-	}
-
 	c.JSON(200, gin.H{
-		"data": results,
+		"data": repos,
 	})
 }
 

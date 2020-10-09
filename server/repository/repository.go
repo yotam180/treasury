@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"path"
+	"time"
 
 	"github.com/Workiva/go-datastructures/queue"
 	"github.com/yotam180/treasury/altfs"
@@ -22,17 +23,18 @@ type Bucket struct {
 Repo is a collection of releases for a project
 */
 type Repo struct {
-	Bucket *Bucket
+	bucket *Bucket
 
-	Name string
+	Name        string
+	LastUpdated time.Time
 }
 
 /*
 Release is a specific release of a
 */
 type Release struct {
-	Repo   *Repo
-	Bucket *Bucket
+	repo   *Repo
+	bucket *Bucket
 
 	Version string
 }
@@ -48,8 +50,8 @@ func NewBucket(fs altfs.FileSystem) *Bucket {
 NewRepo creates a new repository object. It does not create the repository physically, but just returns an object representing it.
 TODO: Create it physically (?)
 */
-func (bucket *Bucket) NewRepo(name string) *Repo {
-	return &Repo{bucket, name}
+func (bucket *Bucket) NewRepo(name string, updated time.Time) *Repo {
+	return &Repo{bucket, name, updated}
 }
 
 /*
@@ -65,7 +67,8 @@ func (bucket *Bucket) ListRepositories() ([]*Repo, error) {
 	repos := make([]*Repo, 0, len(dirs))
 	for _, dir := range dirs {
 		if dir.IsDir() {
-			repos = append(repos, bucket.NewRepo(dir.Name()))
+			dir.ModTime()
+			repos = append(repos, bucket.NewRepo(dir.Name(), dir.ModTime()))
 		}
 	}
 
@@ -76,7 +79,7 @@ func (bucket *Bucket) ListRepositories() ([]*Repo, error) {
 ListReleases returns an array of all releases in the repository.
 */
 func (repo *Repo) ListReleases() ([]Release, error) {
-	subDirs, err := repo.Bucket.ListDir(repo.Name)
+	subDirs, err := repo.bucket.ListDir(repo.Name)
 	if err != nil {
 		return nil, fmt.Errorf("can't list versions: %w", err)
 	}
@@ -85,7 +88,7 @@ func (repo *Repo) ListReleases() ([]Release, error) {
 
 	for _, dir := range subDirs {
 		if dir.IsDir() {
-			releases = append(releases, Release{repo, repo.Bucket, dir.Name()})
+			releases = append(releases, Release{repo, repo.bucket, dir.Name()})
 		}
 	}
 
@@ -97,19 +100,19 @@ CreateRelease opens a new release folder in a repo and returns the release objec
 */
 func (repo *Repo) CreateRelease(version string) (Release, error) {
 	// TODO: Verify that this doesn't enter some other release files folder or anything, and that it is acceptable as a release.
-	err := repo.Bucket.Mkdir(path.Join(repo.Name, version))
+	err := repo.bucket.Mkdir(path.Join(repo.Name, version))
 	if err != nil {
 		return Release{}, err
 	}
 
-	return Release{repo, repo.Bucket, version}, nil
+	return Release{repo, repo.bucket, version}, nil
 }
 
 /*
 GetMetadata returns the metadata object for the release
 */
 func (release Release) GetMetadata() map[string]interface{} {
-	f, err := release.Bucket.Open(path.Join(release.Path(), "metadata.json"))
+	f, err := release.bucket.Open(path.Join(release.Path(), "metadata.json"))
 	if err != nil {
 		return map[string]interface{}{}
 	}
@@ -136,7 +139,7 @@ func (release Release) SetMetadata(newKeys map[string]interface{}) error {
 		metadata[key] = value
 	}
 
-	f, err := release.Bucket.Create(path.Join(release.Path(), "metadata.json"))
+	f, err := release.bucket.Create(path.Join(release.Path(), "metadata.json"))
 	if err != nil {
 		return fmt.Errorf("can't open metadata file for writing: %w", err)
 	}
@@ -163,16 +166,16 @@ func (release Release) AddFile(fileName string, blob io.Reader) error {
 	fileDirPath := path.Join(release.Path(), "files")
 	filePath := path.Join(fileDirPath, fileName)
 
-	if release.Bucket.Exists(filePath) {
+	if release.bucket.Exists(filePath) {
 		return fmt.Errorf("file %s already exists in release %s", fileName, release.Version)
 	}
 
-	err := release.Bucket.Mkdir(fileDirPath)
+	err := release.bucket.Mkdir(fileDirPath)
 	if err != nil {
 		return fmt.Errorf("cannot create release file directory: %w", err)
 	}
 
-	f, err := release.Bucket.Create(filePath)
+	f, err := release.bucket.Create(filePath)
 	if err != nil {
 		return fmt.Errorf("cannot create file in release: %w", err)
 	}
@@ -192,7 +195,7 @@ GetFile opens a specific file in a release for reading
 func (release Release) GetFile(fileName string) (altfs.ReadFile, error) {
 	filePath := path.Join(release.Path(), "files", fileName)
 
-	file, err := release.Bucket.Open(filePath)
+	file, err := release.bucket.Open(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("can't open release file: %w", err)
 	}
@@ -204,7 +207,7 @@ func (release Release) GetFile(fileName string) (altfs.ReadFile, error) {
 ListFiles returns the list of files in a release
 */
 func (release Release) ListFiles() []string {
-	return release.Repo.ListDirRecursive(path.Join(release.Path(), "files"))
+	return release.repo.ListDirRecursive(path.Join(release.Path(), "files"))
 }
 
 /*
@@ -218,7 +221,7 @@ func (repo Repo) ListDirRecursive(dirPath string) []string {
 	result := []string{}
 
 	for {
-		dirContent, err := repo.Bucket.ListDir(path.Join(prefix, dirPath))
+		dirContent, err := repo.bucket.ListDir(path.Join(prefix, dirPath))
 		if err != nil {
 			return []string{}
 		}
@@ -249,9 +252,9 @@ func (repo Repo) ListDirRecursive(dirPath string) []string {
 Path eturns the root path of the release inside the file system
 */
 func (release Release) Path() string {
-	return path.Join(release.Repo.Name, release.Version)
+	return path.Join(release.repo.Name, release.Version)
 }
 
 func (release Release) String() string {
-	return release.Repo.Name + " " + release.Version
+	return release.repo.Name + " " + release.Version
 }
