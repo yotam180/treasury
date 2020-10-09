@@ -19,9 +19,9 @@ export function Header() {
 
   return (
     <div>
-      <AppBar position="static" variant="dense" className={styles.appBar}>
+      <AppBar position="static" variant="elevation" className={styles.appBar}>
         <Toolbar>
-          <img src={logo} className={styles.logo} />
+          <img src={logo} className={styles.logo} alt="Treasury logo" />
           <Typography variant="h5">Treasury Artifact Repository</Typography>
         </Toolbar>
       </AppBar>
