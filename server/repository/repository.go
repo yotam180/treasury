@@ -113,14 +113,30 @@ func (repo *Repo) ListReleases() ([]Release, error) {
 /*
 CreateRelease opens a new release folder in a repo and returns the release object
 */
-func (repo *Repo) CreateRelease(version string) (Release, error) {
+func (repo *Repo) CreateRelease(version string) (*Release, error) {
 	// TODO: Verify that this doesn't enter some other release files folder or anything, and that it is acceptable as a release.
-	err := repo.bucket.Mkdir(path.Join(repo.Name, version))
-	if err != nil {
-		return Release{}, err
+	if repo.bucket.Exists(path.Join(repo.Name, version)) {
+		return nil, fmt.Errorf("release already exists")
 	}
 
-	return Release{repo, repo.bucket, version, time.Now()}, nil // TODO: If the folder already existed, return the correct datetime and not time.Now()
+	err := repo.bucket.Mkdir(path.Join(repo.Name, version))
+	if err != nil {
+		return nil, err
+	}
+
+	return &Release{repo, repo.bucket, version, time.Now()}, nil // TODO: If the folder already existed, return the correct datetime and not time.Now()
+}
+
+/*
+OpenRelease opens an already-existing release object from a repository
+*/
+func (repo *Repo) OpenRelease(version string) (*Release, error) {
+	stat, err := repo.bucket.Stat(path.Join(repo.Name, version))
+	if err != nil {
+		return nil, fmt.Errorf("can't open release: %w", err)
+	}
+
+	return &Release{repo, repo.bucket, version, stat.ModTime()}, nil
 }
 
 /*
