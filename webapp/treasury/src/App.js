@@ -3,24 +3,17 @@ import "./style/App.css";
 import "./style/Fonts.css";
 import "@material-ui/core/styles/";
 
-import {
-  AppBar,
-  Button,
-  CssBaseline,
-  ThemeProvider,
-  Toolbar,
-} from "@material-ui/core";
+import { CssBaseline, ThemeProvider } from "@material-ui/core";
+import { Header } from "./components/Header";
+import { theme } from "./style/theme";
 
 function App() {
   return (
     <div className="App">
-      <ThemeProvider>
+      <ThemeProvider theme={theme}>
         <CssBaseline />
-        <AppBar position="static">
-          <Toolbar edge="start">hello world</Toolbar>
-        </AppBar>
-        <Button variant="contained">Hello world</Button>
-        hello world
+        <Header />
+        Hello, world!
       </ThemeProvider>
     </div>
   );
