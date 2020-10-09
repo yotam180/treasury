@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"path"
 
+	"github.com/Workiva/go-datastructures/queue"
 	"github.com/yotam180/treasury/altfs"
 )
 
@@ -161,6 +162,49 @@ func (release Release) GetFile(fileName string) (altfs.ReadFile, error) {
 	}
 
 	return file, nil
+}
+
+/*
+ListFiles returns the list of files in a release
+*/
+func (release Release) ListFiles() []string {
+	return nil
+}
+
+/*
+ListDirRecursive returns all files in a directory, recursively.
+*/
+func (repo Repo) ListDirRecursive(dirPath string) []string {
+	q := queue.New(64)
+
+	result := []string{}
+
+	for {
+		dirContent, err := repo.ListDir(dirPath)
+		if err != nil {
+			return []string{}
+		}
+
+		for _, fileInfo := range dirContent {
+			if fileInfo.IsDir() {
+				q.Put(path.Join(dirPath, fileInfo.Name()))
+			} else {
+				result = append(result, path.Join(dirPath, fileInfo.Name()))
+			}
+		}
+
+		if q.Len() == 0 {
+			break
+		} else {
+			next, err := q.Get(1)
+			if err != nil {
+				return result // ?
+			}
+			dirPath = next[0].(string)
+		}
+	}
+
+	return result
 }
 
 /*
