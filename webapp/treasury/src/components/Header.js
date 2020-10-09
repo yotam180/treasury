@@ -22,7 +22,7 @@ export function Header() {
       <AppBar position="static" variant="elevation" className={styles.appBar}>
         <Toolbar>
           <img src={logo} className={styles.logo} alt="Treasury logo" />
-          <Typography variant="h5">Treasury Artifact Repository</Typography>
+          <Typography variant="h5">Treasury</Typography>
         </Toolbar>
       </AppBar>
     </div>

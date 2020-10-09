@@ -3,13 +3,14 @@ import "./style/App.css";
 import "./style/Fonts.css";
 import "@material-ui/core/styles/";
 
-import { Container, CssBaseline, ThemeProvider } from "@material-ui/core";
+import { CssBaseline, ThemeProvider } from "@material-ui/core";
 import { Header } from "./components/Header";
 import { theme } from "./style/theme";
-import { RepoList } from "./components/RepoList";
+import { Switch, Route, BrowserRouter as Router } from "react-router-dom";
 import { makeStyles } from "@material-ui/styles";
+import { ReposView } from "./views/ReposView";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   fixedWrapper: {
     top: 0,
     bottom: 0,
@@ -23,38 +24,30 @@ const useStyles = makeStyles((theme) => ({
     flex: 1,
     overflow: "hidden",
   },
-  container: {
-    height: "100%",
-    display: "flex",
-  },
 }));
 
 function App() {
-  function generateData() {
-    let data = [];
-    for (var i = 0; i < 50; ++i) {
-      data.push({ name: "A" + Math.random(), lastUpdated: "yesterday" });
-    }
-    return data;
-  }
-
   const styles = useStyles();
 
   return (
-    <div className="App">
+    <Router>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-
         <div className={styles.fixedWrapper}>
           <Header />
           <div className={styles.app}>
-            <Container className={styles.container}>
-              <RepoList data={generateData()} />
-            </Container>
+            <Switch>
+              <Route path="/" exact>
+                <ReposView />
+              </Route>
+              <Route path="/repo/:name">
+                <div>This is a repo view</div>
+              </Route>
+            </Switch>
           </div>
         </div>
       </ThemeProvider>
-    </div>
+    </Router>
   );
 }
 

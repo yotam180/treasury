@@ -57,7 +57,7 @@ export function RepoList({ data }) {
   return (
     <Paper className={styles.paper}>
       <Typography variant="h4" className={styles.title}>
-        {data ? "Repositories" : "No repositories to show"}
+        {data ? "Projects" : "No repositories to show"}
       </Typography>
       <div className={styles.wrapper}>
         <List>{generateRepoList(data)}</List>
