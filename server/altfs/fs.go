@@ -28,6 +28,8 @@ type ReadFile interface {
 	io.Reader
 	io.ReaderAt
 	io.Seeker
+
+	Name() string
 }
 
 /*
@@ -38,4 +40,6 @@ type WriteFile interface {
 	io.Writer
 	io.WriterAt
 	io.Seeker
+
+	Name() string
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"path"
 	"time"
 
@@ -133,6 +134,9 @@ OpenRelease opens an already-existing release object from a repository
 func (repo *Repo) OpenRelease(version string) (*Release, error) {
 	stat, err := repo.bucket.Stat(path.Join(repo.Name, version))
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("release %s not found", version)
+		}
 		return nil, fmt.Errorf("can't open release: %w", err)
 	}
 
