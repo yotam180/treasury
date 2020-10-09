@@ -1,10 +1,16 @@
 import { AppBar, makeStyles, Toolbar, Typography } from "@material-ui/core";
 import React from "react";
 
+import logo from "../assets/logo.png";
+
 const useStyles = makeStyles((theme) => ({
   appBar: {
     background: theme.palette.background.paper,
     color: theme.palette.text.primary,
+  },
+  logo: {
+    height: "3rem",
+    marginRight: theme.spacing(2),
   },
 }));
 
@@ -15,6 +21,7 @@ export function Header() {
     <div>
       <AppBar position="static" variant="dense" className={styles.appBar}>
         <Toolbar>
+          <img src={logo} className={styles.logo} />
           <Typography variant="h5">Treasury Artifact Repository</Typography>
         </Toolbar>
       </AppBar>
