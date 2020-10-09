@@ -48,7 +48,7 @@ func main() {
 
 	// io.Copy(os.Stdout, file)
 
-	fmt.Println(r.ListDirRecursive("My Product"))
+	fmt.Println(release.ListFiles())
 
 	fmt.Println(release.Version)
 }

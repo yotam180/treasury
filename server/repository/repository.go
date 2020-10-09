@@ -168,19 +168,21 @@ func (release Release) GetFile(fileName string) (altfs.ReadFile, error) {
 ListFiles returns the list of files in a release
 */
 func (release Release) ListFiles() []string {
-	return nil
+	return release.Repo.ListDirRecursive(path.Join(release.Path(), "files"))
 }
 
 /*
 ListDirRecursive returns all files in a directory, recursively.
 */
 func (repo Repo) ListDirRecursive(dirPath string) []string {
+	prefix := dirPath
+	dirPath = "/"
 	q := queue.New(64)
 
 	result := []string{}
 
 	for {
-		dirContent, err := repo.ListDir(dirPath)
+		dirContent, err := repo.ListDir(path.Join(prefix, dirPath))
 		if err != nil {
 			return []string{}
 		}
