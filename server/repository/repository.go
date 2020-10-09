@@ -55,6 +55,20 @@ func (bucket *Bucket) NewRepo(name string, updated time.Time) *Repo {
 }
 
 /*
+OpenRepo opens an existing repository object and returns it.
+*/
+func (bucket *Bucket) OpenRepo(name string) (*Repo, error) {
+	stat, err := bucket.Stat(name)
+	if err != nil {
+		return nil, fmt.Errorf("can't open repo: %w", err)
+	}
+
+	fmt.Println("opening repo", stat, err)
+
+	return &Repo{bucket, name, stat.ModTime()}, nil
+}
+
+/*
 ListRepositories returns a string of repository objects in the bucket.
 TODO: Add more metadata?
 */
@@ -68,7 +82,7 @@ func (bucket *Bucket) ListRepositories() ([]*Repo, error) {
 	for _, dir := range dirs {
 		if dir.IsDir() {
 			dir.ModTime()
-			repos = append(repos, bucket.NewRepo(dir.Name(), dir.ModTime()))
+			repos = append(repos, &Repo{bucket, dir.Name(), dir.ModTime()})
 		}
 	}
 

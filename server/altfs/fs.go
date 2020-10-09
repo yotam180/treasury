@@ -12,6 +12,8 @@ type FileSystem interface {
 	Open(name string) (ReadFile, error)
 	Create(name string) (WriteFile, error)
 
+	Stat(name string) (os.FileInfo, error)
+
 	Exists(names string) bool
 
 	Mkdir(dirPath string) error
