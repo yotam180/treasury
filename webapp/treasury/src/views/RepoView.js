@@ -3,15 +3,18 @@ import {
   Card,
   CardContent,
   CardMedia,
+  Chip,
   Grid,
   ListItem,
   ListItemAvatar,
   ListItemSecondaryAction,
   ListItemText,
   makeStyles,
+  Paper,
   Typography,
 } from "@material-ui/core";
 import Icon from "@material-ui/icons/Pages";
+import FileIcon from "@material-ui/icons/Notes";
 import React, { useEffect, useState } from "react";
 import { withRouter } from "react-router";
 import axios from "axios";
@@ -21,7 +24,7 @@ import { processDate } from "../common";
 import logo from "../assets/logo.png";
 import { Link } from "react-router-dom";
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
   container: {
     padding: 10,
     flex: "1 1",
@@ -45,6 +48,15 @@ const useStyles = makeStyles(() => ({
     display: "flex",
     flexDirection: "column",
     flexShrink: 0,
+  },
+  chipArray: {
+    margin: 10,
+    padding: 0,
+    background: theme.palette.primary.main,
+  },
+  chip: {
+    margin: 5,
+    marginRight: 0,
   },
 }));
 
@@ -84,6 +96,18 @@ async function getRelease(repoName, releaseName) {
   }
 
   return response.data;
+}
+
+// Taken from StackOverflow ;)
+function downloadURI(uri, name) {
+  var link = document.createElement("a");
+  // If you don't know the name or want to use
+  // the webserver default set name = ''
+  link.setAttribute("download", name);
+  link.href = uri;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
 }
 
 /*
@@ -137,6 +161,37 @@ export const RepoView = withRouter(function ({ match }) {
     ));
   }
 
+  function generateFilesList() {
+    if (!releaseState.files) {
+      return <div>No files to show for release</div>;
+    }
+
+    return releaseState.files.map((file) => (
+      <ListItem
+        button
+        dense
+        key={file}
+        onClick={() =>
+          downloadURI(
+            `${REMOTE_URL}/api/repos/${repoName}/releases/${releaseName}/files${file}`
+          )
+        }
+      >
+        <ListItemAvatar>
+          <Avatar>
+            <FileIcon />
+          </Avatar>
+        </ListItemAvatar>
+        <ListItemText
+          primaryTypographyProps={{ variant: "body1" }}
+          primary={file}
+        ></ListItemText>
+      </ListItem>
+    ));
+  }
+
+  console.log(releaseState);
+
   return (
     <Grid container className={styles.container}>
       <Grid item xs={3} className={styles.grid}>
@@ -154,12 +209,24 @@ export const RepoView = withRouter(function ({ match }) {
           <div className={styles.wrapper}>{generateReleaseList()}</div>
         </Card>
       </Grid>
+
       <Grid item xs={9} className={styles.grid}>
-        <Card className={styles.card} style={{ flex: 1 }}>
-          <div className={styles.wrapper}>
-            {error != null && error.toString()}
-            {releaseState && JSON.stringify(releaseState)}
-          </div>
+        <Card className={styles.card} style={{ flex: 1, padding: 10 }}>
+          {error != null && error.toString()}
+          <Typography variant="h4">
+            {repoName} / {releaseState?.data?.version}
+          </Typography>
+          <Paper component="ul" className={styles.chipArray}>
+            {Object.keys(releaseState?.metadata || {}).map((key) => (
+              <Chip
+                key={key}
+                className={styles.chip}
+                label={`${key}: ${releaseState?.metadata[key]}`}
+              />
+            ))}
+          </Paper>
+
+          <div className={styles.wrapper}>{generateFilesList()}</div>
         </Card>
       </Grid>
     </Grid>
