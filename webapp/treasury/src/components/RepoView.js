@@ -12,14 +12,17 @@ import {
   Typography,
 } from "@material-ui/core";
 import Icon from "@material-ui/icons/Pages";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { withRouter } from "react-router";
+import axios from "axios";
 
+import { REMOTE_URL } from "../settings";
+import { processDate } from "../common";
 import logo from "../assets/logo.png";
 
 const useStyles = makeStyles(() => ({
   container: {
-    margin: 10,
+    padding: 10,
     flex: "1 1",
     overflow: "hidden",
   },
@@ -57,6 +60,17 @@ function ReleaseItem({ version, lastUpdated }) {
   );
 }
 
+window.axios = axios;
+
+async function getReleases(repoName) {
+  var response = await axios.get(REMOTE_URL + "/api/repos/" + repoName);
+  if (response.status != 200) {
+    throw Error(response.statusText);
+  }
+
+  return response.data;
+}
+
 /*
 data = [{
         version: string
@@ -69,6 +83,30 @@ export const RepoView = withRouter(function ({ data, match }) {
   const repoName = match.params.name;
 
   const styles = useStyles();
+
+  const [state, setState] = useState({});
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    console.log("requesting repo data");
+    getReleases(repoName).then(setState).catch(setError);
+  }, []);
+
+  function generateReleaseList() {
+    if (state.releases === undefined) {
+      return <div>Loading...</div>;
+    }
+
+    if (state.releases.length === 0) {
+      return <div>No releases to show...</div>;
+    }
+
+    return state.releases.map(({ version, last_updated }) => (
+      <div key={version}>
+        {ReleaseItem({ version, lastUpdated: processDate(last_updated) })}
+      </div>
+    ));
+  }
 
   return (
     <Grid container className={styles.container}>
@@ -84,32 +122,13 @@ export const RepoView = withRouter(function ({ data, match }) {
           </CardContent>
         </Card>
         <Card className={styles.card} style={{ flex: 1 }}>
-          <div className={styles.wrapper}>
-            {ReleaseItem({ version: "0.1.3", lastUpdated: "yesterday" })}
-            {ReleaseItem({ version: "0.1.2-alpha", lastUpdated: "2 days ago" })}
-
-            {ReleaseItem({ version: "0.1.3", lastUpdated: "yesterday" })}
-            {ReleaseItem({ version: "0.1.2-alpha", lastUpdated: "2 days ago" })}
-
-            {ReleaseItem({ version: "0.1.3", lastUpdated: "yesterday" })}
-            {ReleaseItem({ version: "0.1.2-alpha", lastUpdated: "2 days ago" })}
-
-            {ReleaseItem({ version: "0.1.3", lastUpdated: "yesterday" })}
-            {ReleaseItem({ version: "0.1.2-alpha", lastUpdated: "2 days ago" })}
-
-            {ReleaseItem({ version: "0.1.3", lastUpdated: "yesterday" })}
-            {ReleaseItem({ version: "0.1.2-alpha", lastUpdated: "2 days ago" })}
-
-            {ReleaseItem({ version: "0.1.3", lastUpdated: "yesterday" })}
-            {ReleaseItem({ version: "0.1.2-alpha", lastUpdated: "2 days ago" })}
-
-            {ReleaseItem({ version: "0.1.3", lastUpdated: "yesterday" })}
-            {ReleaseItem({ version: "0.1.2-alpha", lastUpdated: "2 days ago" })}
-          </div>
+          <div className={styles.wrapper}>{generateReleaseList()}</div>
         </Card>
       </Grid>
       <Grid item xs={9} className={styles.grid}>
-        Hello world
+        <Card className={styles.card} style={{ flex: 1 }}>
+          <div className={styles.wrapper}>Main content</div>
+        </Card>
       </Grid>
     </Grid>
   );
