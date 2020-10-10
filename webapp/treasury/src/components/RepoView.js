@@ -127,7 +127,9 @@ export const RepoView = withRouter(function ({ data, match }) {
       </Grid>
       <Grid item xs={9} className={styles.grid}>
         <Card className={styles.card} style={{ flex: 1 }}>
-          <div className={styles.wrapper}>Main content</div>
+          <div className={styles.wrapper}>
+            {error != null && error.toString()}
+          </div>
         </Card>
       </Grid>
     </Grid>
