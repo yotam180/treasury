@@ -47,9 +47,9 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-function ReleaseItem({ version, lastUpdated }) {
+function ReleaseItem({ version, lastUpdated, selected }, onClick) {
   return (
-    <ListItem button dense>
+    <ListItem button dense onClick={onClick} selected={selected}>
       <ListItemAvatar>
         <Avatar>
           <Icon />
@@ -64,7 +64,19 @@ window.axios = axios;
 
 async function getReleases(repoName) {
   var response = await axios.get(REMOTE_URL + "/api/repos/" + repoName);
-  if (response.status != 200) {
+  if (response.status !== 200) {
+    throw Error(response.statusText);
+  }
+
+  return response.data;
+}
+
+async function getRelease(repoName, releaseName) {
+  var response = await axios.get(
+    REMOTE_URL + "/api/repos/" + repoName + "/releases/" + releaseName
+  );
+
+  if (response.status !== 200) {
     throw Error(response.statusText);
   }
 
@@ -87,10 +99,16 @@ export const RepoView = withRouter(function ({ data, match }) {
   const [state, setState] = useState({});
   const [error, setError] = useState(null);
 
+  const [releaseState, setReleaseState] = useState({});
+
   useEffect(() => {
     console.log("requesting repo data");
     getReleases(repoName).then(setState).catch(setError);
   }, []);
+
+  function onReleaseSelect(releaseName) {
+    getRelease(repoName, releaseName).then(setReleaseState).catch(setError);
+  }
 
   function generateReleaseList() {
     if (state.releases === undefined) {
@@ -103,7 +121,14 @@ export const RepoView = withRouter(function ({ data, match }) {
 
     return state.releases.map(({ version, last_updated }) => (
       <div key={version}>
-        {ReleaseItem({ version, lastUpdated: processDate(last_updated) })}
+        {ReleaseItem(
+          {
+            version,
+            lastUpdated: processDate(last_updated),
+            selected: version === releaseState?.data?.version,
+          },
+          () => onReleaseSelect(version)
+        )}
       </div>
     ));
   }
@@ -129,6 +154,7 @@ export const RepoView = withRouter(function ({ data, match }) {
         <Card className={styles.card} style={{ flex: 1 }}>
           <div className={styles.wrapper}>
             {error != null && error.toString()}
+            {releaseState && JSON.stringify(releaseState)}
           </div>
         </Card>
       </Grid>
