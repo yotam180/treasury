@@ -11,17 +11,20 @@ import {
 
 import FolderIcon from "@material-ui/icons/Folder";
 import { makeStyles } from "@material-ui/styles";
+import { Link } from "react-router-dom";
 
 export function RepoItem({ name, lastUpdated }) {
   return (
-    <ListItem button dense key={name}>
-      <ListItemAvatar>
-        <Avatar>
-          <FolderIcon />
-        </Avatar>
-      </ListItemAvatar>
-      <ListItemText primary={name} secondary={lastUpdated}></ListItemText>
-    </ListItem>
+    <Link to={"/repos/" + name} key={name}>
+      <ListItem button dense>
+        <ListItemAvatar>
+          <Avatar>
+            <FolderIcon />
+          </Avatar>
+        </ListItemAvatar>
+        <ListItemText primary={name} secondary={lastUpdated}></ListItemText>
+      </ListItem>
+    </Link>
   );
 }
 

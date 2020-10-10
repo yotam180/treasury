@@ -19,6 +19,7 @@ import axios from "axios";
 import { REMOTE_URL } from "../settings";
 import { processDate } from "../common";
 import logo from "../assets/logo.png";
+import { Link } from "react-router-dom";
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -47,16 +48,18 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-function ReleaseItem({ version, lastUpdated, selected }, onClick) {
+function ReleaseItem({ version, lastUpdated, selected }, repoName) {
   return (
-    <ListItem button dense onClick={onClick} selected={selected}>
-      <ListItemAvatar>
-        <Avatar>
-          <Icon />
-        </Avatar>
-      </ListItemAvatar>
-      <ListItemText primary={version} secondary={lastUpdated}></ListItemText>
-    </ListItem>
+    <Link to={`/repos/${repoName}/releases/${version}`}>
+      <ListItem button dense selected={selected}>
+        <ListItemAvatar>
+          <Avatar>
+            <Icon />
+          </Avatar>
+        </ListItemAvatar>
+        <ListItemText primary={version} secondary={lastUpdated}></ListItemText>
+      </ListItem>
+    </Link>
   );
 }
 
@@ -90,9 +93,9 @@ data = [{
     }...
 ]
 */
-export const RepoView = withRouter(function ({ data, match }) {
-  const releases = data;
+export const RepoView = withRouter(function ({ match }) {
   const repoName = match.params.name;
+  const releaseName = match.params.release;
 
   const styles = useStyles();
 
@@ -102,13 +105,14 @@ export const RepoView = withRouter(function ({ data, match }) {
   const [releaseState, setReleaseState] = useState({});
 
   useEffect(() => {
-    console.log("requesting repo data");
     getReleases(repoName).then(setState).catch(setError);
-  }, []);
+  }, [repoName]);
 
-  function onReleaseSelect(releaseName) {
-    getRelease(repoName, releaseName).then(setReleaseState).catch(setError);
-  }
+  useEffect(() => {
+    if (releaseName) {
+      getRelease(repoName, releaseName).then(setReleaseState).catch(setError);
+    }
+  }, [releaseName]);
 
   function generateReleaseList() {
     if (state.releases === undefined) {
@@ -127,7 +131,7 @@ export const RepoView = withRouter(function ({ data, match }) {
             lastUpdated: processDate(last_updated),
             selected: version === releaseState?.data?.version,
           },
-          () => onReleaseSelect(version)
+          repoName
         )}
       </div>
     ));
