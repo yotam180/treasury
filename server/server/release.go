@@ -18,6 +18,10 @@ func listReleases(c *gin.Context) {
 		return
 	}
 
+	for i, j := 0, len(releases)-1; i < j; i, j = i+1, j-1 {
+		releases[i], releases[j] = releases[j], releases[i]
+	}
+
 	c.JSON(200, gin.H{
 		"repository": repo,
 		"releases":   releases,

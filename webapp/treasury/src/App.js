@@ -9,7 +9,7 @@ import { theme } from "./style/theme";
 import { Switch, Route, BrowserRouter as Router } from "react-router-dom";
 import { makeStyles } from "@material-ui/styles";
 import { ReposView } from "./views/ReposView";
-import { RepoView } from "./components/RepoView";
+import { RepoView } from "./views/RepoView";
 
 const useStyles = makeStyles(() => ({
   fixedWrapper: {
@@ -24,6 +24,9 @@ const useStyles = makeStyles(() => ({
   app: {
     flex: 1,
     overflow: "hidden",
+    alignItems: "stretch",
+    flexDirection: "column",
+    display: "flex",
   },
 }));
 
@@ -41,27 +44,11 @@ function App() {
               <Route path="/" exact>
                 <ReposView />
               </Route>
-              <Route path="/repo/:name">
-                <RepoView
-                  data={[
-                    {
-                      version: "0.1.0-alpha",
-                      last_updated: "2020-10-09T14:20:47.234204+03:00",
-                    },
-                    {
-                      version: "0.1.1",
-                      last_updated: "2020-10-08T23:40:47.2057345+03:00",
-                    },
-                    {
-                      version: "0.2.3",
-                      last_updated: "2020-10-08T23:40:52.7862415+03:00",
-                    },
-                    {
-                      version: "0.3.0",
-                      last_updated: "2020-10-09T11:15:38.5226762+03:00",
-                    },
-                  ]}
-                />
+              <Route path="/repos/:name/releases/:release">
+                <RepoView />
+              </Route>
+              <Route path="/repos/:name">
+                <RepoView />
               </Route>
             </Switch>
           </div>

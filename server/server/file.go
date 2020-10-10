@@ -1,6 +1,8 @@
 package server
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 func downloadFile(c *gin.Context) {
 	repoID := c.Param("repo")
@@ -31,5 +33,5 @@ func downloadFile(c *gin.Context) {
 }
 
 func init() {
-	Main.GET("/api/repos/:repo/releases/:release/files/:file", downloadFile)
+	Main.GET("/api/repos/:repo/releases/:release/files/*file", downloadFile)
 }

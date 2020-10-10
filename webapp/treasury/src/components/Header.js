@@ -1,5 +1,6 @@
 import { AppBar, makeStyles, Toolbar, Typography } from "@material-ui/core";
 import React from "react";
+import { Link } from "react-router-dom";
 
 import logo from "../assets/logo.png";
 
@@ -21,7 +22,9 @@ export function Header() {
     <div>
       <AppBar position="static" variant="elevation" className={styles.appBar}>
         <Toolbar>
-          <img src={logo} className={styles.logo} alt="Treasury logo" />
+          <Link to="/">
+            <img src={logo} className={styles.logo} alt="Treasury logo" />
+          </Link>
           <Typography variant="h5">Treasury</Typography>
         </Toolbar>
       </AppBar>
