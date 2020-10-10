@@ -13,8 +13,9 @@ import { RepoView } from "./components/RepoView";
 
 const useStyles = makeStyles(() => ({
   fixedWrapper: {
+    background: "grey",
     top: 0,
-    bottom: 0,
+    bottom: 20,
     left: 0,
     right: 0,
     display: "flex",
@@ -24,6 +25,9 @@ const useStyles = makeStyles(() => ({
   app: {
     flex: 1,
     overflow: "hidden",
+    alignItems: "stretch",
+    flexDirection: "column",
+    display: "flex",
   },
 }));
 
