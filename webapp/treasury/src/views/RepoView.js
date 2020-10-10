@@ -14,7 +14,7 @@ import {
   Typography,
 } from "@material-ui/core";
 import Icon from "@material-ui/icons/Pages";
-import FileIcon from "@material-ui/icons/Notes";
+import FileIcon from "@material-ui/icons/Description";
 import React, { useEffect, useState } from "react";
 import { withRouter } from "react-router";
 import axios from "axios";
@@ -22,6 +22,7 @@ import axios from "axios";
 import { REMOTE_URL } from "../settings";
 import { processDate } from "../common";
 import logo from "../assets/logo.png";
+import placeholder from "../assets/placeholder.png";
 import { Link } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
@@ -162,7 +163,11 @@ export const RepoView = withRouter(function ({ match }) {
   }
 
   function generateFilesList() {
-    if (!releaseState.files) {
+    if (!releaseState) {
+      return null;
+    }
+
+    if (!releaseState?.files?.length) {
       return <div>No files to show for release</div>;
     }
 
@@ -197,7 +202,7 @@ export const RepoView = withRouter(function ({ match }) {
       <Grid item xs={3} className={styles.grid}>
         <Card className={styles.card}>
           <CardMedia
-            image={logo}
+            image={placeholder}
             title="Repository name comes here"
             className={styles.media}
           />
@@ -211,23 +216,25 @@ export const RepoView = withRouter(function ({ match }) {
       </Grid>
 
       <Grid item xs={9} className={styles.grid}>
-        <Card className={styles.card} style={{ flex: 1, padding: 10 }}>
-          {error != null && error.toString()}
-          <Typography variant="h4">
-            {repoName} / {releaseState?.data?.version}
-          </Typography>
-          <Paper component="ul" className={styles.chipArray}>
-            {Object.keys(releaseState?.metadata || {}).map((key) => (
-              <Chip
-                key={key}
-                className={styles.chip}
-                label={`${key}: ${releaseState?.metadata[key]}`}
-              />
-            ))}
-          </Paper>
+        {Object.keys(releaseState).length > 0 && (
+          <Card className={styles.card} style={{ flex: 1, padding: 10 }}>
+            {error != null && error.toString()}
+            <Typography variant="h4">
+              {repoName} / {releaseState?.data?.version}
+            </Typography>
+            <Paper component="ul" className={styles.chipArray}>
+              {Object.keys(releaseState?.metadata || {}).map((key) => (
+                <Chip
+                  key={key}
+                  className={styles.chip}
+                  label={`${key}: ${releaseState?.metadata[key]}`}
+                />
+              ))}
+            </Paper>
 
-          <div className={styles.wrapper}>{generateFilesList()}</div>
-        </Card>
+            <div className={styles.wrapper}>{generateFilesList()}</div>
+          </Card>
+        )}
       </Grid>
     </Grid>
   );
