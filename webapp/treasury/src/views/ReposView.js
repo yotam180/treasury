@@ -34,7 +34,10 @@ export function ReposView() {
           lastUpdated: processDate(last_updated),
         }))
       )
-    );
+    ).catch((error) => setState([{
+      name: "Error: " + error.message,
+      lastUpdated: JSON.stringify(error?.response?.data?.error)
+    }]));
   }, []);
 
   function generateData() {

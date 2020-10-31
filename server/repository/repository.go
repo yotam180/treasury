@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/Workiva/go-datastructures/queue"
-	"github.com/yotam180/treasury/altfs"
+	"github.com/user/treasury/altfs"
 )
 
 /*
@@ -49,11 +49,19 @@ func NewBucket(fs altfs.FileSystem) *Bucket {
 }
 
 /*
-NewRepo creates a new repository object. It does not create the repository physically, but just returns an object representing it.
-TODO: Create it physically (?)
+CreateRepo creates a new repository object. First creates it physically, then returns an object representing it.
 */
-func (bucket *Bucket) NewRepo(name string, updated time.Time) *Repo {
-	return &Repo{bucket, name, updated}
+func (bucket *Bucket) CreateRepo(name string) (*Repo, error) {
+	if bucket.Exists(name) {
+		return nil, fmt.Errorf("Repo already exists")
+	}
+
+	err := bucket.Mkdir(name)
+	if err != nil {
+		return nil, err
+	}
+
+	return bucket.OpenRepo(name)
 }
 
 /*
@@ -144,6 +152,56 @@ func (repo *Repo) OpenRelease(version string) (*Release, error) {
 }
 
 /*
+GetMetadata returns the metadata object for the repository
+*/
+func (repo *Repo) GetMetadata() map[string]interface{} {
+	f, err := repo.bucket.Open(path.Join(repo.Name, "metadata.json"))
+	if err != nil {
+		return map[string]interface{}{}
+	}
+	defer f.Close()
+
+	content, err := ioutil.ReadAll(f)
+	if err != nil {
+		return map[string]interface{}{}
+	}
+
+	var data = make(map[string]interface{}, 0)
+	err = json.Unmarshal(content, &data)
+
+	return data
+}
+
+/*
+SetMetadata adds some metadata keys to the repository
+*/
+func (repo *Repo) SetMetadata(newKeys map[string]interface{}) error {
+	metadata := repo.GetMetadata()
+
+	for key, value := range newKeys {
+		metadata[key] = value
+	}
+
+	f, err := repo.bucket.Create(path.Join(repo.Name, "metadata.json"))
+	if err != nil {
+		return fmt.Errorf("can't open metadata file for writing: %w", err)
+	}
+	defer f.Close()
+
+	marshalled, err := json.Marshal(metadata)
+	if err != nil {
+		return fmt.Errorf("can't encode metadata as JSON object: %w", err)
+	}
+
+	_, err = f.Write(marshalled)
+	if err != nil {
+		return fmt.Errorf("can't write metadata to file: %w", err)
+	}
+
+	return nil
+}
+
+/*
 GetMetadata returns the metadata object for the release
 */
 func (release Release) GetMetadata() map[string]interface{} {
@@ -165,7 +223,7 @@ func (release Release) GetMetadata() map[string]interface{} {
 }
 
 /*
-SetMetadata adds some metadata keys to the repository
+SetMetadata adds some metadata keys to the release
 */
 func (release Release) SetMetadata(newKeys map[string]interface{}) error {
 	metadata := release.GetMetadata()
@@ -200,6 +258,7 @@ If the file exists, this fails with an error
 func (release Release) AddFile(fileName string, blob io.Reader) error {
 	fileDirPath := path.Join(release.Path(), "files")
 	filePath := path.Join(fileDirPath, fileName)
+	fileDirPath = path.Dir(filePath)
 
 	if release.bucket.Exists(filePath) {
 		return fmt.Errorf("file %s already exists in release %s", fileName, release.Version)
@@ -284,7 +343,7 @@ func (repo Repo) ListDirRecursive(dirPath string) []string {
 }
 
 /*
-Path eturns the root path of the release inside the file system
+Path returns the root path of the release inside the file system
 */
 func (release Release) Path() string {
 	return path.Join(release.repo.Name, release.Version)

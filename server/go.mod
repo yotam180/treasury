@@ -1,10 +1,11 @@
-module github.com/yotam180/treasury
+module github.com/user/treasury
 
 go 1.15
 
 require (
 	github.com/Workiva/go-datastructures v1.0.52
 	github.com/gin-gonic/gin v1.6.3
+	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-playground/validator/v10 v10.4.0 // indirect
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect

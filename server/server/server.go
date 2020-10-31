@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/yotam180/treasury/repository"
+	"github.com/user/treasury/repository"
 )
 
 /*
@@ -14,3 +14,21 @@ var Main = gin.Default()
 Bucket is the bucket to serve repositories and versions from.
 */
 var Bucket *repository.Bucket = nil
+
+func listRepositories(c *gin.Context) {
+	repos, err := Bucket.ListRepositories()
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"data": repos,
+	})
+}
+
+func init() {
+	Main.GET("/api/repos", listRepositories)
+}

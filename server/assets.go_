@@ -1,0 +1,11 @@
+package main
+
+import "fmt"
+
+/*
+This file is a fake asset file for debug compilations. It is copied to assets.go when running make debug
+*/
+
+func Asset(name string) ([]byte, error) {
+	return nil, fmt.Errorf("not implemented")
+}

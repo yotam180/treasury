@@ -195,14 +195,14 @@ export const RepoView = withRouter(function ({ match }) {
     ));
   }
 
-  console.log(releaseState);
+  console.log(state);
 
   return (
     <Grid container className={styles.container}>
       <Grid item xs={3} className={styles.grid}>
         <Card className={styles.card}>
           <CardMedia
-            image={placeholder}
+            image={state?.metadata?.picture || placeholder}
             title="Repository name comes here"
             className={styles.media}
           />
