@@ -3,95 +3,94 @@ name: Go
 on:
   pull_request:
   create:
-  
+
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.14
 
-    - name: Set up Go 1.x
-      uses: actions/setup-go@v2
-      with:
-        go-version: ^1.14
-        
-    - name: Set up Node    
-      uses: actions/setup-node@v1
-      with:
-        node-version: '12'
+      - name: Set up Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: "12"
 
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
 
-    - name: Get go dependencies
-      run: |
-        go get -u github.com/jteeuwen/go-bindata/...
-        cd cli && go get -v -t -d .
-        cd ..
-        cd server && go get -v -t -d .
-        cd ..
-        if [ -f Gopkg.toml ]; then
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            dep ensure
-        fi
-        
-    - name: Get node dependencies
-      run: cd webapp/treasury && npm install
+      - name: Get go dependencies
+        run: |
+          go get -u github.com/jteeuwen/go-bindata/...
+          cd cli && go get -v -t -d .
+          cd ..
+          cd server && go get -v -t -d .
+          cd ..
+          if [ -f Gopkg.toml ]; then
+              curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+              dep ensure
+          fi
 
-    - name: Build
-      run: make && ls -la build/ && pwd
+      - name: Get node dependencies
+        run: cd webapp/treasury && npm install
 
-    - name: Upload build results
-      uses: actions/upload-artifact@v2
-      with:
-        name: dist
-        path: build
+      - name: Build
+        run: make && ls -la build/ && pwd
 
-    - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/')
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: CLI ${{ github.ref }}
-        draft: false
-        prerelease: false
+      - name: Upload build results
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: build
 
-    - name: Upload Windows treasury
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: build/treasury-linux-x64
-        asset_name: treasury-linux-x64
-        asset_content_type: application/x-elf
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: CLI ${{ github.ref }}
+          draft: false
+          prerelease: false
 
-    - name: Upload Linux treasury
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: build/treasury-win-x64.exe
-        asset_name: treasury-win-x64.exe
-        asset_content_type: application/vnd.microsoft.portable-executable
-    
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      - name: Upload Windows treasury
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: build/treasury-linux-x64
+          asset_name: treasury-linux-x64
+          asset_content_type: application/x-elf
 
-    - name: Login to dockerhub
-      if: startsWith(github.ref, 'refs/tags/')
-      run: |
-        docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" -p "${{ secrets.DOCKERHUB_PASSWORD }}"
+      - name: Upload Linux treasury
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: build/treasury-win-x64.exe
+          asset_name: treasury-win-x64.exe
+          asset_content_type: application/vnd.microsoft.portable-executable
 
-    - name: Docker push to dockerhub
-      if: startsWith(github.ref, 'refs/tags/')
-      run: |
-        docker build . -t ${{ github.actor }}/tres
-        docker tag ${{ github.actor }}/tres:latest ${{ github.actor }}/tres::${{ github.ref }}
-        docker push ${{ github.actor }}/tres::${{ github.ref }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to dockerhub
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" -p "${{ secrets.DOCKERHUB_PASSWORD }}"
+
+      - name: Docker push to dockerhub
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          docker build . -t ${{ github.actor }}/treasury
+          docker tag ${{ github.actor }}/treasury:latest ${{ github.actor }}/treasury::${{ github.ref }}
+          docker push ${{ github.actor }}/treasury::${{ github.ref }}
