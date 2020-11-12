@@ -93,4 +93,4 @@ jobs:
         run: |
           docker build . -t ${{ github.actor }}/treasury
           docker tag ${{ github.actor }}/treasury:latest ${{ github.actor }}/treasury::${{ github.ref }}
-          docker push ${{ github.actor }}/treasury::${{ github.ref }}
+          docker push ${{ github.actor }}/treasury:${{ github.ref }}
