@@ -5,8 +5,9 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"treasury/pkg/command"
-	"treasury/pkg/config"
+
+	"github.com/user/treasury_cli/command"
+	"github.com/user/treasury_cli/config"
 
 	flag "github.com/spf13/pflag"
 )

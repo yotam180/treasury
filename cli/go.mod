@@ -1,4 +1,4 @@
-module treasury
+module github.com/user/treasury_cli
 
 go 1.15
 

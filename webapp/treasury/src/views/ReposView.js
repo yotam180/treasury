@@ -40,14 +40,6 @@ export function ReposView() {
     }]));
   }, []);
 
-  function generateData() {
-    let data = [];
-    for (var i = 0; i < 50; ++i) {
-      data.push({ name: "A" + Math.random(), lastUpdated: "yesterday" });
-    }
-    return data;
-  }
-
   return (
     <Container className={styles.container}>
       <RepoList data={state || []} />

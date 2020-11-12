@@ -2,7 +2,10 @@
 all: front bindata back cli
 	mkdir -p build
 	cp server/build/treasury build/
-	cp cli/build/treasury-cli build/
+	cp -r cli/build/* build/
+
+docker:
+	docker build . -t treasury/treasury
 
 run_debug: fake_bindata
 	cd webapp/treasury && npm start &
@@ -19,7 +22,10 @@ front:
 	cd webapp/treasury && npm run-script build
 
 back:
-	cd server && mkdir -p build && go build -o build/treasury .
+	cd server && mkdir -p build && CGO_ENABLED=0 go build -o build/treasury .
 
 cli:
-	cd cli && mkdir -p build && go build -o build/treasury-cli .
+	cd cli && mkdir -p build && CGO_ENABLED=0 go build -o build/treasury-linux-x64 .
+	cd cli && mkdir -p build && GOOS=windows CGO_ENABLED=0 go build -o build/treasury-win-x64.exe .
+	
+.PHONY: docker

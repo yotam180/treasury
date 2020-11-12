@@ -1,1 +1,1 @@
-export const REMOTE_URL = "http://localhost:8080";
+export const REMOTE_URL = window.location.host === "localhost" ? "http://localhost:8080" : "";

@@ -7,7 +7,6 @@ import {
   Grid,
   ListItem,
   ListItemAvatar,
-  ListItemSecondaryAction,
   ListItemText,
   makeStyles,
   Paper,
@@ -21,7 +20,6 @@ import axios from "axios";
 
 import { REMOTE_URL } from "../settings";
 import { processDate } from "../common";
-import logo from "../assets/logo.png";
 import placeholder from "../assets/placeholder.png";
 import { Link } from "react-router-dom";
 
@@ -137,7 +135,7 @@ export const RepoView = withRouter(function ({ match }) {
     if (releaseName) {
       getRelease(repoName, releaseName).then(setReleaseState).catch(setError);
     }
-  }, [releaseName]);
+  }, [releaseName, repoName]);
 
   function generateReleaseList() {
     if (state.releases === undefined) {
