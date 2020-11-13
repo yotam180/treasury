@@ -92,5 +92,5 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           docker build . -t ${{ github.actor }}/treasury
-          docker tag ${{ github.actor }}/treasury:latest ${{ github.actor }}/treasury:${{ github.ref }}
-          docker push ${{ github.actor }}/treasury:${{ github.ref }}
+          docker tag ${{ github.actor }}/treasury:latest ${{ github.actor }}/treasury:$(git describe --tag --abbrev=0)
+          docker push ${{ github.actor }}/treasury:$(git describe --tag --abbrev=0)
