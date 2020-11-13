@@ -94,3 +94,4 @@ jobs:
           docker build . -t ${{ github.actor }}/treasury
           docker tag ${{ github.actor }}/treasury:latest ${{ github.actor }}/treasury:$(git describe --tag --abbrev=0)
           docker push ${{ github.actor }}/treasury:$(git describe --tag --abbrev=0)
+          docker push ${{ github.actor }}/treasury:latest
