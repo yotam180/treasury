@@ -32,7 +32,7 @@ func downloadFile(c *gin.Context) {
 	fileName := file.Name()
 	file.Close()
 
-	c.FileAttachment(fileName, fileID)
+	c.FileAttachment(fileName, path.Base(fileID))
 }
 
 func uploadFile(c *gin.Context) {
