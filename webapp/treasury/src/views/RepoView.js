@@ -150,7 +150,6 @@ export const RepoView = withRouter(function ({ match }) {
     releases_in_order.sort(
       (a, b) => new Date(b.last_updated) - new Date(a.last_updated)
     );
-    console.log("Sorted: ", releases_in_order);
 
     return releases_in_order.map(({ version, last_updated }) => (
       <div key={version}>
