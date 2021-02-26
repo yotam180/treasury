@@ -11,3 +11,5 @@ assets.go
 
 .vscode/
 treasury_bin
+
+config.json

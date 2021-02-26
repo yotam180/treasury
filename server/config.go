@@ -15,15 +15,32 @@ type Config struct {
 	Writes []string `json:"writes"`
 }
 
-const (
-	configPath = "/etc/treasury/config.json"
+var (
+	configPaths = []string{
+		"/etc/treasury/config.json",
+		"config.json", // Fallback local config file
+	}
 )
+
+func readFiles(filePaths []string) ([]byte, error) {
+	var err error = nil
+	content := []byte{}
+
+	for _, filePath := range filePaths {
+		content, err = ioutil.ReadFile(filePath)
+		if err == nil {
+			return content, nil
+		}
+	}
+
+	return nil, err
+}
 
 func getConfig() Config {
 
 	defaultConfig := Config{[]string{}, []string{}}
 
-	content, err := ioutil.ReadFile(configPath)
+	content, err := readFiles(configPaths)
 	if err != nil {
 		return writeBack(defaultConfig)
 	}
@@ -44,6 +61,6 @@ func writeBack(config Config) Config {
 		return config
 	}
 
-	ioutil.WriteFile(configPath, data, os.ModePerm)
+	ioutil.WriteFile(configPaths[0], data, os.ModePerm)
 	return config
 }
